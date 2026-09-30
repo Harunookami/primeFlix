@@ -1,25 +1,55 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import api from "../../services/api";
 
 function Filme() {
   const { id } = useParams();
+  const [filme, setFilme] = useState({});
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function loadFilme() {
-      await api.get(`/movie/${id}`, {
-        params: {
-          api_key: "9b5b9e4b01a1d42bd5e78872c06d7ae4",
-          language: "pt-br",
-        },
-      });
+      await api
+        .get(`/movie/${id}`, {
+          params: {
+            api_key: "9b5b9e4b01a1d42bd5e78872c06d7ae4",
+            language: "pt-br",
+          },
+        })
+        .the((response) => {
+          setFilme(response.data);
+          setLoading(false);
+        })
+        .catch(() => {
+          console.log("FILME NÃO ENCONTRADO");
+        });
     }
 
-    loadFilme()
+    loadFilme();
+
+    return () => {
+      console.log();
+    };
   }, []);
+
+  if (loading) {
+    return (
+      <div className="filme-info">
+        <h1>Carregando detalhes...</h1>
+      </div>
+    );
+  }
   return (
-    <div>
-      <h1>Acessando filme {}</h1>
+    <div className="filme-info">
+      <h1>{filme.title}</h1>
+      <img
+        src={`https://image.tmdb.org/t/p/original/${filme.backdrop_path}`}
+        alt={filme.title}
+      />
+      <h3>Sinopse</h3>
+      <span>{filme.overview}</span>
+
+      <strong>Avalição: {filme.vote_average} / 10</strong>
     </div>
   );
 }
